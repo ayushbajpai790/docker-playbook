@@ -1,0 +1,40 @@
+- hosts: all
+  tasks:
+  - name: setting up docker yum configuration
+    yum_repository:
+            name: dockername
+            description: repo for docker
+            baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+            gpgcheck: no
+  - command: "yum install docker-ce --nobest -y"
+
+  - name: starting and enabling docker services
+    service:
+            name: "docker"
+            state: started
+            enabled: yes
+
+  - name: install sdk of docker for python3
+    pip:
+            name: docker
+  - name: pull httpd  server image
+    docker_image:
+            name: httpd
+            source: pull
+            tag: "latest"
+  - name: folder
+    file:
+            path: "/root/home/"
+            state: directory
+  - name: copying the html code in /var/www/directory
+    copy:
+            dest: "/var/www/html"
+            src: "ayush.html"
+  - name: launch the httpd container and exposing it to the public
+    docker_container:
+            name: httpd_webserver
+            state: started
+            exposed_ports: "80"
+            image: httpd
+            ports: 8080:80
+            volumes: /root/home/:/var/www/html
